@@ -1,9 +1,9 @@
 from django.db import models
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericForeignKey
-from accounts.models import PetSeeker as Seeker 
+from accounts.models.seekers import PetSeeker as Seeker 
 from shelters.models.shelter import PetShelter as Shelter
-from accounts.models import CustomUser
+from accounts.models.seekers import CustomUser
 
 class Chat(models.Model):
     date_created = models.DateTimeField(auto_now_add=True)

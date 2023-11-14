@@ -1,6 +1,6 @@
 from django.db import models
 from shelters.models.pets import Pet
-from accounts.models import PetSeeker as Seeker
+from accounts.models.seekers import PetSeeker as Seeker
 from shelters.models.shelter import PetShelter as Shelter
 
 

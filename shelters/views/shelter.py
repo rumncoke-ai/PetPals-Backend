@@ -10,7 +10,7 @@ from rest_framework import generics, permissions
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from ..models import PetShelter
-from accounts.models import CustomUser, PetSeeker
+from accounts.models.seekers import CustomUser, PetSeeker
 from ..serializers.shelter_serializers import PetShelterSerializer, \
 CustomUserUpdateSerializer, PetShelterSignUpSerializer,PetShelterRetrieveSerializer, PetShelterUpdateSerializer
 from rest_framework.generics import RetrieveAPIView
@@ -125,9 +125,10 @@ class ShelterRetrieveUpdateDestroyView(RetrieveUpdateDestroyAPIView):
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
+        
         if self.request.user != instance.user:
-            return Response({"message": "You do not have permission to delete this shelter."},
-                            status=status.HTTP_403_FORBIDDEN)
+            return Response({"message": "You do not have permission to delete this seeker."},
+                            status=status.HTTP_401_UNAUTHORIZED)
         user = CustomUser.objects.get(id=instance.user.id)
         user.delete()
         instance.delete()

@@ -7,8 +7,8 @@ from rest_framework import views
 from rest_framework import generics, permissions
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
-from .models import PetSeeker, CustomUser
-from .serializers.seeker_serializer import PetSeekerRetrieveSerializer, PetSeekerSignUpSerializer,PetSeekerUpdateSerializer,PetSeekerSerializer
+from ..models import PetSeeker, CustomUser
+from ..serializers.seeker_serializer import PetSeekerRetrieveSerializer, PetSeekerSignUpSerializer,PetSeekerUpdateSerializer,PetSeekerSerializer
 from rest_framework.generics import RetrieveAPIView,RetrieveUpdateDestroyAPIView
 from django.shortcuts import get_object_or_404
 from shelters.models.shelter import PetShelter
@@ -31,7 +31,9 @@ class PetSeekerSignUpView(generics.CreateAPIView):
             username = serializer.validated_data.pop('username')
             password = serializer.validated_data.pop('password')
             email = serializer.validated_data.pop('email')
+
             new_user = CustomUser.objects.create_user(username=username, password=password, email=email)
+
             new_seeker = PetSeeker.objects.create(user=new_user, firstname=firstname, lastname=lastname)
             new_seeker.save()
             response_data = {
@@ -99,7 +101,7 @@ class SeekerRetrieveUpdateDestroyView(RetrieveUpdateDestroyAPIView):
         instance = self.get_object()
         # can only update youru own profile 
         if self.request.user != instance.user:
-            return Response({"message": "You do not have permission to update this shelter."},
+            return Response({"message": "You do not have permission to update this seeker."},
                             status=status.HTTP_403_FORBIDDEN)
 
         serializer = self.get_serializer(instance, data=request.data, partial=True)
@@ -132,12 +134,14 @@ class SeekerRetrieveUpdateDestroyView(RetrieveUpdateDestroyAPIView):
         
 
     def destroy(self, request, *args, **kwargs):
+
         instance = self.get_object()
-        # can only edit your own profile
+         # can only edit your own profile
         if self.request.user != instance.user:
-            return Response({"message": "You do not have permission to delete this shelter."},
-                            status=status.HTTP_403_FORBIDDEN)
+            return Response({"message": "You do not have permission to delete this seeker."},
+                            status=status.HTTP_401_UNAUTHORIZED)
         user = CustomUser.objects.get(id=instance.user.id)
         user.delete()
         instance.delete()
         return Response({'message':'Successfully deleted.'},status=status.HTTP_204_NO_CONTENT)
+ 

@@ -1,7 +1,9 @@
 from rest_framework import serializers
-from accounts.models import CustomUser
+from accounts.models.seekers import CustomUser
 from ..models.shelter import PetShelter, ShelterImage
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+
+from django.core.exceptions import ValidationError
 from django.contrib.auth.password_validation import validate_password
 
 class PetShelterSerializer(serializers.Serializer):
@@ -13,6 +15,22 @@ class PetShelterSignUpSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
         fields = ['username', 'password', 'email', 'shelter_name']
+
+    def validate_password(self, value):
+        try:
+            validate_password(value)
+        except ValidationError as e:
+            # Catch ValidationError and raise a Serializer error
+            error_messages = ' '.join(map(str, e.messages))
+            raise serializers.ValidationError(error_messages)
+
+        return value
+
+    def validate(self, data):
+
+        data = super().validate(data)
+
+        return data
 
 class ShelterImageSerializer(serializers.ModelSerializer):
     class Meta: 
@@ -46,6 +64,21 @@ class CustomUserUpdateSerializer(serializers.ModelSerializer):
             'password': {'write_only': True},
             'username': {'read_only': True}
         }
+    def validate_password(self, value):
+        try:
+            validate_password(value)
+        except ValidationError as e:
+            # Catch ValidationError and raise a Serializer error
+            error_messages = ' '.join(map(str, e.messages))
+            raise serializers.ValidationError(error_messages)
+
+        return value
+
+    def validate(self, data):
+
+        data = super().validate(data)
+
+        return data
 
 """
 Must send array of images want to keep
@@ -67,3 +100,4 @@ class PetShelterUpdateSerializer(serializers.ModelSerializer):
                 user_serializer.save()
 
         return super().update(instance, validated_data)
+    

@@ -1,6 +1,6 @@
 
 from rest_framework import serializers
-from accounts.models import CustomUser, PetSeeker
+from accounts.models.seekers import CustomUser, PetSeeker
 from ..models.shelter import PetShelter
 from ..models.reviews import Review
 from chats.models.messages import Message
