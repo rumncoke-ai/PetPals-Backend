@@ -50,3 +50,7 @@ class PetSeeker(models.Model):
 
     def __str__(self):
         return f"Pet Seeker: {self.user.username}"
+    
+    def delete(self, *args, **kwargs):
+        self.user.delete()
+        return super(self.__class__, self).delete(*args, **kwargs)

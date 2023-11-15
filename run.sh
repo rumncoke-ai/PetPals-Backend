@@ -4,4 +4,4 @@
 source venv/bin/activate
 
 # Start the server
-./manage.py runserver
+python3 ./manage.py runserver

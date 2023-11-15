@@ -12,6 +12,11 @@ class PetShelter(models.Model):
     def __str__(self):
         return f"Pet Shelter: {self.shelter_name}"
 
+    def delete(self, *args, **kwargs):
+        self.user.delete()
+        return super(self.__class__, self).delete(*args, **kwargs)
+
+
 class ShelterImage(models.Model):
     shelter = models.ForeignKey(PetShelter, on_delete=models.CASCADE, related_name='shelter_images')
     image_file = models.ImageField(upload_to='shelter_images/')

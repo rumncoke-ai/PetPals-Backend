@@ -59,7 +59,6 @@ class ShelterRetrieveUpdateDestroyView(RetrieveUpdateDestroyAPIView):
     queryset = PetShelter.objects.all()
 
     def get_object(self):
-        
         return get_object_or_404(PetShelter, id=self.kwargs['shelter_pk'])
 
     def get_serializer_class(self):
@@ -123,7 +122,7 @@ class ShelterRetrieveUpdateDestroyView(RetrieveUpdateDestroyAPIView):
             }
 
             return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
-
+    
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -131,9 +130,10 @@ class ShelterRetrieveUpdateDestroyView(RetrieveUpdateDestroyAPIView):
         if self.request.user != instance.user:
             return Response({"message": "You do not have permission to delete this seeker."},
                             status=status.HTTP_401_UNAUTHORIZED)
-        user = CustomUser.objects.get(id=instance.user.id)
-        user.delete()
-        instance.delete()
+        # user = CustomUser.objects.get(id=instance.user.id)
+        # user.delete()
+        instance.user.delete()
+
 
         return Response({'message':'Successfully deleted.'},status=status.HTTP_204_NO_CONTENT)
 
