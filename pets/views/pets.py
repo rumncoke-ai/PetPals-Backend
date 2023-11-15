@@ -4,7 +4,7 @@ from django.shortcuts import render
 from rest_framework import status
 from django.core.exceptions import PermissionDenied
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.generics import RetrieveUpdateDestroyAPIView, CreateAPIView
+from rest_framework.generics import RetrieveUpdateDestroyAPIView, CreateAPIView, ListCreateAPIView
 from rest_framework import views
 from rest_framework import generics, permissions
 from rest_framework.response import Response
@@ -39,9 +39,57 @@ class CustomPageNumberPagination(PageNumberPagination):
         })
 
 
-class CreatePetView(CreateAPIView):
+class PetListCreateView(ListCreateAPIView):
     serializer_class = PetSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [permissions.AllowAny]
+    pagination_class = CustomPageNumberPagination
+
+    def get_permissions(self):
+        # change permissions for POST, so user must be logged in 
+        if self.request.method == 'POST':
+            return [IsAuthenticated()]
+        return super().get_permissions()
+
+    def get_queryset(self):
+        queryset = Pet.objects.all()
+
+        # # Filter by shelter and status
+        shelter = self.request.query_params.get('shelter')
+        status = self.request.query_params.get(
+            'status', 'available')  # Default status is 'available'
+        if shelter:
+            queryset = queryset.filter(shelter__shelter_name=shelter)
+        if status:
+            queryset = queryset.filter(status=status)
+
+        # # Additional filters
+        gender = self.request.query_params.get('gender')
+        color = self.request.query_params.get('colour')
+        size = self.request.query_params.get('size')
+        pet_type = self.request.query_params.get(
+            'type')  # Look into case sensitivity
+
+        if gender:
+            queryset = queryset.filter(gender=gender)
+        if color:
+            queryset = queryset.filter(color=color)
+        if size:
+            queryset = queryset.filter(weight__lte=size)
+        if pet_type:
+            queryset = queryset.filter(pet_type=pet_type)
+
+        # # Sorting options
+        order_by = self.request.query_params.get('order_by')
+        if order_by == 'name':
+            # THIS ISN'T WORKING FOR SOME REASON!!!
+            queryset = queryset.order_by('name')
+        if order_by == 'age':
+            queryset = queryset.order_by('date_of_birth')
+        if order_by == 'size':
+            queryset = queryset.order_by('weight')
+
+        return queryset
+
 
     def create(self, request, *args, **kwargs):
         user = self.request.user
@@ -113,7 +161,7 @@ class PetDetailView(RetrieveUpdateDestroyAPIView):
 
     def update(self, request, *args, **kwargs):
         pet = self.get_object()
-        serializer = self.get_serializer(instance=pet, data=request.data)
+        serializer = self.get_serializer(pet, data=request.data, partial=True)
         if self.request.user != pet.shelter.user:
             return Response({"detail": "Your shelter did not create this pet. You do not have permission to update it."},
                             status=status.HTTP_403_FORBIDDEN)
@@ -135,8 +183,8 @@ class PetDetailView(RetrieveUpdateDestroyAPIView):
                     image.delete()
             
             response_data = {
-                'pet_id': pet.id,
                 'message': 'Pet successfully updated.',
+                'data': serializer.data
             }
             return Response(response_data, status=status.HTTP_200_OK)
 
@@ -148,47 +196,48 @@ class PetDetailView(RetrieveUpdateDestroyAPIView):
             return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
 
-class PetListView(ListAPIView):
-    serializer_class = PetSerializer
-    permission_classes = [permissions.AllowAny]
-    pagination_class = CustomPageNumberPagination
+class PetImageCreateView(generics.CreateAPIView):
+    queryset = PetImage.objects.all()
+    serializer_class = PetImageSerializer
 
-    def get_queryset(self):
-        queryset = Pet.objects.all()
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        pet_pk = self.kwargs['pet_pk']
+        pet = get_object_or_404(Pet, id=pet_pk)
+        if self.request.user != pet.shelter.user:
+            return Response({"message": "You do not have permission to update this pet."},
+                            status=status.HTTP_403_FORBIDDEN)
 
-        # # Filter by shelter and status
-        shelter = self.request.query_params.get('shelter')
-        status = self.request.query_params.get(
-            'status', 'available')  # Default status is 'available'
-        if shelter:
-            queryset = queryset.filter(shelter__shelter_name=shelter)
-        if status:
-            queryset = queryset.filter(status=status)
+        if serializer.is_valid():
+            serializer.save(pet=pet)
+            data = {
+                'status': 'success',
+                'message': 'Successfully created.',
+                'data': serializer.data,  
+            }
+            return Response(data, status=status.HTTP_201_CREATED)
 
-        # # Additional filters
-        gender = self.request.query_params.get('gender')
-        color = self.request.query_params.get('colour')
-        size = self.request.query_params.get('size')
-        pet_type = self.request.query_params.get(
-            'type')  # Look into case sensitivity
+        response_data = {
+                'message': 'Invalid Request.',
+                'errors': serializer.errors
+            }
 
-        if gender:
-            queryset = queryset.filter(gender=gender)
-        if color:
-            queryset = queryset.filter(color=color)
-        if size:
-            queryset = queryset.filter(weight__lte=size)
-        if pet_type:
-            queryset = queryset.filter(pet_type=pet_type)
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
-        # # Sorting options
-        order_by = self.request.query_params.get('order_by')
-        if order_by == 'name':
-            # THIS ISN'T WORKING FOR SOME REASON!!!
-            queryset = queryset.order_by('name')
-        if order_by == 'age':
-            queryset = queryset.order_by('date_of_birth')
-        if order_by == 'size':
-            queryset = queryset.order_by('weight')
+class PetImageDeleteView(generics.DestroyAPIView):
+    queryset = PetImage.objects.all()
+    serializer_class = PetImageSerializer
 
-        return queryset
+    def delete(self, request, *args, **kwargs):
+        pet_image = get_object_or_404(PetImage, id=self.kwargs['image_pk'])
+        
+        pet = get_object_or_404(Pet, id=self.kwargs['pet_pk'])
+
+        if self.request.user != pet.shelter.user:
+            return Response({"message": "You do not have permission to delete this shelter image."},
+                            status=status.HTTP_403_FORBIDDEN)
+
+        pet_image.delete()
+
+        return Response({"message": "Successfully deleted."},
+                        status=status.HTTP_204_NO_CONTENT)

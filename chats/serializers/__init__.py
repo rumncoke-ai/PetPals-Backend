@@ -1,1 +1,1 @@
-from .message_serializers import ChatSerializer, MessageSerializer
+from .message_serializers import MessageSerializer

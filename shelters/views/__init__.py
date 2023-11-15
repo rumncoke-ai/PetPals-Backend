@@ -1,2 +1,2 @@
-from .shelter import PetShelterSignUpView,ShelterRetrieveUpdateDestroyView,PetShelterListView
+from .shelter import PetShelterSignUpView,ShelterRetrieveUpdateDestroyView,PetShelterListView,ShelterImageCreateView,ShelterImageDeleteView
 from .reviews import CreateReviewMessageView,CreateListView,MessageListAPIView

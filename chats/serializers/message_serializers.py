@@ -1,7 +1,7 @@
 
 from rest_framework import serializers
 from accounts.models.seekers import CustomUser, PetSeeker
-from ..models.messages import Message, Chat
+from ..models.messages import Message
 
 
 class MessageSerializer(serializers.ModelSerializer):
@@ -12,9 +12,4 @@ class MessageSerializer(serializers.ModelSerializer):
         read_only_fields = ['date_sent', 'sender', 'message_content_type', 'object_id', 'message_type']
 
 
-class ChatSerializer(serializers.ModelSerializer):
 
-    class Meta:
-        model = Chat
-        fields = '__all__'
-        read_only_fields = ['date_created', 'seeker', 'shelter']

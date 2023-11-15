@@ -107,7 +107,7 @@ class SeekerRetrieveUpdateDestroyView(RetrieveUpdateDestroyAPIView):
         serializer = self.get_serializer(instance, data=request.data, partial=True)
         if serializer.is_valid():
         
-            user_data = serializer.validated_data.pop('user', tuple())
+            user_data = serializer.validated_data.pop('user', {})
 
             user = CustomUser.objects.get(id=self.request.user.id)
             for key, value in user_data.items():
