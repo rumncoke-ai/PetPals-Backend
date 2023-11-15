@@ -125,8 +125,8 @@ class PetDetailView(RetrieveUpdateDestroyAPIView):
                     image.delete()
             
             response_data = {
-                'pet_id': pet.id,
                 'message': 'Pet successfully updated.',
+                'data': serializer.data
             }
             return Response(response_data, status=status.HTTP_200_OK)
 

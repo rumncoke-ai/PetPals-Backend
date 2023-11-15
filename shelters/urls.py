@@ -20,8 +20,6 @@ urlpatterns = [
     path('<int:shelter_pk>/review/<int:review_pk>/message/', CreateReviewMessageView.as_view(), name='create_review_message'),
     path('<int:shelter_pk>/pet/', CreatePetView.as_view(), name='create_pet'),
     path('<int:shelter_pk>/pet/<int:pet_pk>/', PetDetailView.as_view(), name='pet_detail'),
-    path('<int:shelter_pk>/pet/<int:pet_pk>/image/', PetImageCreateView.as_view(), name='pet_detail'),
-    path('<int:shelter_pk>/pet/<int:pet_pk>/image/<int:image_pk>/', PetImageDeleteView.as_view(), name='pet_detail'),
     path('<int:shelter_pk>/image/', ShelterImageCreateView.as_view(), name='create'),
     path('<int:shelter_pk>/image/<int:image_pk>/', ShelterImageDeleteView.as_view(), name='delete'),
 ]
