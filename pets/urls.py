@@ -9,10 +9,9 @@ from .views.applications import CreateChatMessageView,MessageListAPIView,CreateC
 app_name = 'pet'
 
 urlpatterns = [
-    path('new/', CreatePetView.as_view(), name='create_pet'),
+    path('', PetListCreateView.as_view(), name='create_list_pet'),
     path('<int:pet_pk>/', PetDetailView.as_view(), name='pet_detail'),
-    path('', PetListView.as_view(), name='pet_search'),
-    path('<int:pet_pk>/applications/new/', CreateApplicationView.as_view(), name='create'),
+    path('<int:pet_pk>/applications/', CreateApplicationView.as_view(), name='create'),
     path('<int:pet_pk>/applications/<int:application_pk>/', ApplicationDetailView.as_view(), name='update'),
     path('applications/', ListAllApplicationView.as_view(), name='list-apps'),
     path('applications/<int:application_pk>/chat/', CreateChatListView.as_view()),
