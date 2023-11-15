@@ -13,12 +13,12 @@ from shelters.models import PetShelter
 from ..models import Pet
 from ..models import Application
 from accounts.models import CustomUser, PetSeeker
-from .serializers import CreateApplicationSerializer, ApplicationSerializer, ListApplicationSerializer,ChatSerializer
+from ..serializers.application_serializers import CreateApplicationSerializer, ApplicationSerializer, ListApplicationSerializer,ChatSerializer
 from rest_framework.generics import RetrieveAPIView, CreateAPIView
 from django.shortcuts import get_object_or_404
 from chats.serializers.message_serializers import MessageSerializer
 from rest_framework.pagination import PageNumberPagination
-from .models.chat import Chat
+from ..models import Chat
 from django.contrib.contenttypes.models import ContentType
 from chats.models.messages import Message
 

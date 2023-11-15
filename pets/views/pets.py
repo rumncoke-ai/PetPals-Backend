@@ -39,9 +39,57 @@ class CustomPageNumberPagination(PageNumberPagination):
         })
 
 
-class CreatePetView(CreateAPIView):
+class PetListCreateView(CreateAPIView):
     serializer_class = PetSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [permissions.AllowAny]
+    pagination_class = CustomPageNumberPagination
+
+    def get_permissions(self):
+        # change permissions for POST, so user must be logged in 
+        if self.request.method == 'POST':
+            return [IsAuthenticated()]
+        return super().get_permissions()
+
+    def get_queryset(self):
+        queryset = Pet.objects.all()
+
+        # # Filter by shelter and status
+        shelter = self.request.query_params.get('shelter')
+        status = self.request.query_params.get(
+            'status', 'available')  # Default status is 'available'
+        if shelter:
+            queryset = queryset.filter(shelter__shelter_name=shelter)
+        if status:
+            queryset = queryset.filter(status=status)
+
+        # # Additional filters
+        gender = self.request.query_params.get('gender')
+        color = self.request.query_params.get('colour')
+        size = self.request.query_params.get('size')
+        pet_type = self.request.query_params.get(
+            'type')  # Look into case sensitivity
+
+        if gender:
+            queryset = queryset.filter(gender=gender)
+        if color:
+            queryset = queryset.filter(color=color)
+        if size:
+            queryset = queryset.filter(weight__lte=size)
+        if pet_type:
+            queryset = queryset.filter(pet_type=pet_type)
+
+        # # Sorting options
+        order_by = self.request.query_params.get('order_by')
+        if order_by == 'name':
+            # THIS ISN'T WORKING FOR SOME REASON!!!
+            queryset = queryset.order_by('name')
+        if order_by == 'age':
+            queryset = queryset.order_by('date_of_birth')
+        if order_by == 'size':
+            queryset = queryset.order_by('weight')
+
+        return queryset
+
 
     def create(self, request, *args, **kwargs):
         user = self.request.user
@@ -127,6 +175,7 @@ class PetDetailView(RetrieveUpdateDestroyAPIView):
             response_data = {
                 'pet_id': pet.id,
                 'message': 'Pet successfully updated.',
+                'data': serializer.data
             }
             return Response(response_data, status=status.HTTP_200_OK)
 
@@ -137,51 +186,6 @@ class PetDetailView(RetrieveUpdateDestroyAPIView):
             }
             return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
-
-class PetListView(ListAPIView):
-    serializer_class = PetSerializer
-    permission_classes = [permissions.AllowAny]
-    pagination_class = CustomPageNumberPagination
-
-    def get_queryset(self):
-        queryset = Pet.objects.all()
-
-        # # Filter by shelter and status
-        shelter = self.request.query_params.get('shelter')
-        status = self.request.query_params.get(
-            'status', 'available')  # Default status is 'available'
-        if shelter:
-            queryset = queryset.filter(shelter__shelter_name=shelter)
-        if status:
-            queryset = queryset.filter(status=status)
-
-        # # Additional filters
-        gender = self.request.query_params.get('gender')
-        color = self.request.query_params.get('colour')
-        size = self.request.query_params.get('size')
-        pet_type = self.request.query_params.get(
-            'type')  # Look into case sensitivity
-
-        if gender:
-            queryset = queryset.filter(gender=gender)
-        if color:
-            queryset = queryset.filter(color=color)
-        if size:
-            queryset = queryset.filter(weight__lte=size)
-        if pet_type:
-            queryset = queryset.filter(pet_type=pet_type)
-
-        # # Sorting options
-        order_by = self.request.query_params.get('order_by')
-        if order_by == 'name':
-            # THIS ISN'T WORKING FOR SOME REASON!!!
-            queryset = queryset.order_by('name')
-        if order_by == 'age':
-            queryset = queryset.order_by('date_of_birth')
-        if order_by == 'size':
-            queryset = queryset.order_by('weight')
-
-        return queryset
 
 class PetImageCreateView(generics.CreateAPIView):
     queryset = PetImage.objects.all()
