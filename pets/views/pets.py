@@ -55,33 +55,35 @@ class PetListCreateView(ListCreateAPIView):
 
         # # Filter by shelter and status
         shelter = self.request.query_params.get('shelter')
-        status = self.request.query_params.get(
-            'status', 'available')  # Default status is 'available'
         if shelter:
             queryset = queryset.filter(shelter__shelter_name=shelter)
+
+        status = self.request.query_params.get(
+            'status', 'Available')  # Default status is 'available'
         if status:
             queryset = queryset.filter(status=status)
 
-        # # Additional filters
+        # # # Additional filters
         gender = self.request.query_params.get('gender')
-        color = self.request.query_params.get('colour')
-        size = self.request.query_params.get('size')
-        pet_type = self.request.query_params.get(
-            'type')  # Look into case sensitivity
-
         if gender:
             queryset = queryset.filter(gender=gender)
+
+        color = self.request.query_params.get('color')
         if color:
             queryset = queryset.filter(color=color)
+        
+        size = self.request.query_params.get('size')
         if size:
             queryset = queryset.filter(weight__lte=size)
+
+        pet_type = self.request.query_params.get(
+            'type')  # Look into case sensitivity
         if pet_type:
             queryset = queryset.filter(pet_type=pet_type)
 
-        # # Sorting options
+        # # # Sorting options
         order_by = self.request.query_params.get('order_by')
         if order_by == 'name':
-            # THIS ISN'T WORKING FOR SOME REASON!!!
             queryset = queryset.order_by('name')
         if order_by == 'age':
             queryset = queryset.order_by('date_of_birth')
