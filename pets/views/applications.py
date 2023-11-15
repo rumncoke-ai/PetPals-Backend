@@ -9,8 +9,9 @@ from rest_framework import views
 from rest_framework import generics, permissions
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
-from shelters.models import PetShelter, Pet
-from .models.applications import Application
+from shelters.models import PetShelter
+from ..models import Pet
+from ..models import Application
 from accounts.models import CustomUser, PetSeeker
 from .serializers import CreateApplicationSerializer, ApplicationSerializer, ListApplicationSerializer,ChatSerializer
 from rest_framework.generics import RetrieveAPIView, CreateAPIView
@@ -36,8 +37,14 @@ class CreateApplicationView(CreateAPIView):
         if not seeker:
             return Response({"detail": "You do not have permission to create an application. Only Seekers can create applications."},
                             status=status.HTTP_403_FORBIDDEN)
-        
+
         pet = get_object_or_404(Pet, id=self.kwargs['pet_pk'])
+        existing_application = Application.objects.filter(seeker=seeker, pet=pet)
+        if not existing_application:
+            return Response({"detail": "You have already created an application for this pet."},
+                            status=status.HTTP_403_FORBIDDEN)
+
+        
         app_serializer = self.get_serializer(data=request.data)
 
         if app_serializer.is_valid():
@@ -192,8 +199,7 @@ class CustomPageNumberPagination(PageNumberPagination):
             'results': data,
         })
 
-
-class ListApplicationView(ListAPIView):
+class ListAllApplicationView(ListAPIView):
     serializer_class = ListApplicationSerializer
     permission_classes = [IsAuthenticated]
     pagination_class = CustomPageNumberPagination
@@ -205,8 +211,8 @@ class ListApplicationView(ListAPIView):
 
         if shelter:
             # Shelter can only view their own applications
-            pet = get_object_or_404(Pet, id=self.kwargs['pet_pk'], shelter=shelter)
-            return Application.objects.filter(shelter=shelter, pet=pet)
+            # pet = get_object_or_404(Pet, id=self.kwargs['pet_pk'], shelter=shelter)
+            return Application.objects.filter(shelter=shelter)
         elif seeker:
             # Pet Seeker can only view their own applications
             return Application.objects.filter(seeker=seeker)
