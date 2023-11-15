@@ -21,6 +21,8 @@ from rest_framework.pagination import PageNumberPagination
 from ..models.chat import Chat
 from django.contrib.contenttypes.models import ContentType
 from chats.models.messages import Message
+from django.utils import timezone
+
 
 
 class CreateApplicationView(CreateAPIView):
@@ -279,7 +281,9 @@ class CreateChatListView(generics.ListCreateAPIView):
             serializer = self.get_serializer(data=request.data)
             if serializer.is_valid():
                 serializer.save(shelter=application_shelter, seeker=application_seeker, application=application)
-                
+                application.last_update_time = timezone.now()
+                application.save()
+
                 response_data = {
                     'message': 'Successfully created.', 
                     'data': serializer.data
@@ -315,6 +319,8 @@ class CreateChatMessageView(generics.CreateAPIView):
                 model_name = content_type.model_class().__name__
                 serializer.save(sender=user, message_content_type=content_type,
                         object_id=chat.id, message_type=model_name)
+                chat.application.last_update_time = timezone.now()
+                chat.application.save()
                 response_data = {
                     'message': 'Successfully created.', 
                     'data': serializer.data

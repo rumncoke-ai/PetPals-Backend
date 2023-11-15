@@ -71,8 +71,8 @@ class SeekerRetrieveUpdateDestroyView(RetrieveUpdateDestroyAPIView):
         url_seeker = get_object_or_404(PetSeeker, id=seeker_id)
 
         seeker = get_object_or_404(PetSeeker, user=user)
-        print(seeker_id)
-        print(seeker.id)
+        #print(seeker_id)
+        #print(seeker.id)
         if seeker_id != seeker.id:
             shelter = get_object_or_404(PetShelter, user=user)
             # Check if the shelter has an active application with the pet seeker
