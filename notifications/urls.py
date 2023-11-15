@@ -5,7 +5,7 @@ from notifications.views import CreateNotificationsView, NotificationListView, N
 app_name = 'notifications'
 
 urlpatterns = [
-    path('new/', CreateNotificationsView.as_view(), name='create'),
+    # path('new/', CreateNotificationsView.as_view(), name='create'),
     path('', NotificationListView.as_view(), name='list'),
     path('<int:pk>/',  NotificationRetrieveUpdateDestroyAPIView.as_view(), name='action'),
 ]
