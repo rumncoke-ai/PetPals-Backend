@@ -6,9 +6,9 @@ from shelters.models.shelter import PetShelter as Shelter
 
 
 class Notifications(models.Model):
-    sender = models.ForeignKey(CustomUser, on_delete=models.SET_NULL,
+    sender = models.ForeignKey(CustomUser, on_delete=models.CASCADE,
                                null=True, blank=True, related_name='sender_notifications')
-    receiver = models.ForeignKey(CustomUser, on_delete=models.SET_NULL,
+    receiver = models.ForeignKey(CustomUser, on_delete=models.CASCADE,
                                  null=True, blank=True, related_name='receiver_notifications')
     notification_type = models.CharField(max_length=50, choices=[
         ('new_message', 'new_message'),
