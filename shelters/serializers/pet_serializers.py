@@ -9,6 +9,7 @@ class PetImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = PetImage
         fields = ('id', 'image_file')
+        read_only_fields = ['id']
 
 class PetShelterSerializer(serializers.ModelSerializer):
     class Meta:
@@ -27,8 +28,8 @@ class PetRetrieveSerializer(serializers.ModelSerializer):
 
 class PetUpdateSerializer(serializers.ModelSerializer):
     shelter = PetShelterSerializer(required=False)
-    new_images = serializers.ListField(child=PetImageSerializer(), write_only=True, required=False)
-    old_images = serializers.ListField(child=serializers.IntegerField(), write_only=True, required=False)
+    pet_images = PetImageSerializer(many=True, required=False)
+
     class Meta: 
         model = Pet
         fields = '__all__'
