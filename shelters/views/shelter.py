@@ -10,44 +10,42 @@ from rest_framework import generics, permissions
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from ..models import PetShelter
-from accounts.models import CustomUser, PetSeeker
-from ..serializers.shelter_serializers import PetShelterSerializer, PetShelterSignUpSerializer,PetShelterRetrieveSerializer,PetShelterUpdateSerializer
+from accounts.models.seekers import CustomUser, PetSeeker
+from ..serializers.shelter_serializers import PetShelterSerializer, \
+CustomUserUpdateSerializer, PetShelterSignUpSerializer,PetShelterRetrieveSerializer, PetShelterUpdateSerializer
 from rest_framework.generics import RetrieveAPIView
 from django.shortcuts import get_object_or_404
+from django.contrib import messages
+from django.contrib.auth.hashers import check_password
 
 class PetShelterSignUpView(generics.CreateAPIView):
     serializer_class = PetShelterSignUpSerializer
     permission_classes = [permissions.AllowAny]
 
-    def perform_create(self, serializer):
-        shelter_name = serializer.validated_data.pop('shelter_name')
-        new_user = serializer.save()
-        new_shelter = PetShelter.objects.create(user=new_user, shelter_name=shelter_name)
-        new_shelter.save()
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            shelter_name = serializer.validated_data.pop('shelter_name')
+            username = serializer.validated_data.pop('username')
+            password = serializer.validated_data.pop('password')
+            email = serializer.validated_data.pop('email')
+            new_user = CustomUser.objects.create_user(username=username, password=password, email=email)
+            new_shelter = PetShelter.objects.create(user=new_user, shelter_name=shelter_name)
+            new_shelter.save()
+            response_data = {
+                'shelter_id': new_shelter.id,
+                'message': 'Shelter successfully created.',
+            }
 
+            return Response(response_data, status=status.HTTP_201_CREATED)
+        else:
+            response_data = {
+                'message': 'Invalid Request.',
+                'errors': serializer.errors
+            }
 
+            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
-class PetShelterLoginView(views.APIView):
-
-    serializer_class = PetShelterSerializer
-    permission_classes = [permissions.AllowAny]
-
-    def post(self, request, *args, **kwargs):
-        serializer = self.serializer_class(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        username = serializer.validated_data.get('username')
-        password = serializer.validated_data.get('password')
-        user = CustomUser.objects.filter(username=username).first()
-        
-        if user is None or not (user.password == password):
-            return Response({'message': 'Invalid credentials'})
-        
-        refresh = RefreshToken.for_user(user)
-        response_data = {
-            'refresh_token': str(refresh),
-            'access_token': str(refresh.access_token),
-        }
-        return Response(response_data)
 
 """
 Single endpoint /shelter/<>/
@@ -61,7 +59,8 @@ class ShelterRetrieveUpdateDestroyView(RetrieveUpdateDestroyAPIView):
     queryset = PetShelter.objects.all()
 
     def get_object(self):
-        return get_object_or_404(PetShelter, pk=self.kwargs['shelter_pk'])
+        
+        return get_object_or_404(PetShelter, id=self.kwargs['shelter_pk'])
 
     def get_serializer_class(self):
         # Override to use different serializers for different HTTP methods
@@ -75,43 +74,66 @@ class ShelterRetrieveUpdateDestroyView(RetrieveUpdateDestroyAPIView):
             return [IsAuthenticated()]
         return super().get_permissions()
 
-    def perform_update(self, serializer):
-        if self.request.user != serializer.instance.user:
-            return Response({"detail": "You do not have permission to update this shelter."},
-                            status=status.HTTP_403_FORBIDDEN)
-
-        new_images = serializer.validated_data.pop('new_images', tuple())
-        old_image_id = serializer.validated_data.pop('old_images', [])
-        user_data = serializer.validated_data.pop('user', tuple())
-
-        user = CustomUser.objects.get(id=self.request.user.id)
-        for key, value in user_data.items():
-            setattr(user, key, value)
-        user.save()
-       
-        #shelter = PetShelter.objects.update(**serializer.validated_data)
-        #shelter.save()
-        serializer.save()
-        shelter = serializer.instance
-
-        # for each new image file, create a new image object
-        for image_file in new_images:
-            ShelterImage.objects.create(**image_file, shelter=shelter)
-        for image in shelter.shelter_images.all():
-            if image.id not in old_image_id:
-                image.delete()
-
-    def perform_destroy(self, instance):
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        # user must be the shelter to update its profile
         if self.request.user != instance.user:
-            return Response({"detail": "You do not have permission to delete this shelter."},
+            return Response({"message": "You do not have permission to update this shelter."},
                             status=status.HTTP_403_FORBIDDEN)
+
+        serializer = self.get_serializer(instance, data=request.data, partial=True)
+        if serializer.is_valid():
+
+            new_images = serializer.validated_data.pop('new_images', tuple())
+            old_image_id = serializer.validated_data.pop('old_images', [])
+
+
+            if 'user' in serializer.validated_data and serializer.validated_data['user']:
+                user_data = serializer.validated_data.pop('user')
+                
+
+                user_serializer = CustomUserUpdateSerializer(instance.user, data=user_data, partial=True)
+                if user_serializer.is_valid():
+                    user_serializer.save()
+            else:
+                serializer.instance.user = self.request.user
+                serializer.save()
+
+            shelter = serializer.instance
+
+            # for each new image file, create a new image object
+            for image_file in new_images:
+                ShelterImage.objects.create(**image_file, shelter=shelter)
+            for image in shelter.shelter_images.all():
+                if image.id not in old_image_id:
+                    image.delete()
+            data = {
+                'status': 'success',
+                'message': 'Successfully updated.',
+                'data': serializer.data,  
+            }
+            return Response(data, status=status.HTTP_200_OK)
+        else: 
+
+            response_data = {
+                'message': 'Invalid Request.',
+                'errors': serializer.errors
+            }
+
+            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        
+        if self.request.user != instance.user:
+            return Response({"message": "You do not have permission to delete this seeker."},
+                            status=status.HTTP_401_UNAUTHORIZED)
         user = CustomUser.objects.get(id=instance.user.id)
         user.delete()
         instance.delete()
 
-
-
-
+        return Response({'message':'Successfully deleted.'},status=status.HTTP_204_NO_CONTENT)
 
 
 """
@@ -122,8 +144,3 @@ class PetShelterListView(ListAPIView):
     queryset = PetShelter.objects.all()
     permission_classes = [permissions.AllowAny]
     serializer_class = PetShelterRetrieveSerializer
-
-
-class PetShelterUpdateView(UpdateAPIView):
-    queryset = PetShelter.objects.all()
-    serializer_class = PetShelterSerializer

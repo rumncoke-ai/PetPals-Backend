@@ -1,5 +1,5 @@
 from django.db import models
-from accounts.models import CustomUser
+from accounts.models.seekers import CustomUser
 
 
 class PetShelter(models.Model):

@@ -1,9 +1,9 @@
 from django.db import models
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericForeignKey
-from accounts.models import PetSeeker as Seeker 
+from accounts.models.seekers import PetSeeker as Seeker 
 from shelters.models.shelter import PetShelter as Shelter
-from accounts.models import CustomUser
+from accounts.models.seekers import CustomUser
 
 class Chat(models.Model):
     date_created = models.DateTimeField(auto_now_add=True)
@@ -19,6 +19,7 @@ class Message(models.Model):
     message_content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, related_name='messages')
     object_id = models.PositiveIntegerField()
     chat_or_review = GenericForeignKey('message_content_type', 'object_id')
+    message_type = models.CharField(max_length=30, blank=True, null=True)
     
     date_sent = models.DateTimeField(auto_now_add=True)
     content = models.TextField(max_length=500, blank=False, null=False)

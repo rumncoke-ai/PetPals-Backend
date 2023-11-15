@@ -2,8 +2,8 @@ from .shelter import PetShelter
 
 from django.db import models
 from django.contrib.auth.models import User  # Assuming you're using Django's built-in User model
-from accounts.models import PetSeeker as Seeker 
-from accounts.models import CustomUser
+from accounts.models.seekers import PetSeeker as Seeker 
+from accounts.models.seekers import CustomUser
 from .shelter import PetShelter as Shelter
 from django.core.validators import MinValueValidator, MaxValueValidator
 

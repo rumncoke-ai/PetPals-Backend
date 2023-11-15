@@ -10,7 +10,7 @@ from rest_framework import generics, permissions
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from ..models import PetShelter, Review
-from accounts.models import CustomUser, PetSeeker
+from accounts.models.seekers import CustomUser, PetSeeker
 from ..serializers.shelter_serializers import PetShelterSerializer, PetShelterSignUpSerializer,PetShelterRetrieveSerializer,PetShelterUpdateSerializer
 from rest_framework.generics import RetrieveAPIView
 from django.shortcuts import get_object_or_404
@@ -20,14 +20,9 @@ from rest_framework.pagination import PageNumberPagination
 from django.contrib.contenttypes.models import ContentType
 from chats.models.messages import Message
 
-
-
-
-
 class CustomPageNumberPagination(PageNumberPagination):
     page_size = 5  # Set the default page size
     page_size_query_param = 'page_size'  
-    # Allow clients to override the page size via query parameter
     max_page_size = 5  # Set the maximum allowed page size
 
     def get_paginated_response(self, data):
@@ -41,6 +36,8 @@ class CustomPageNumberPagination(PageNumberPagination):
             'results': data,
         })
 
+
+
 class CreateReviewMessageView(generics.CreateAPIView):
     serializer_class = MessageSerializer
 
@@ -50,8 +47,12 @@ class CreateReviewMessageView(generics.CreateAPIView):
 
         review_id = self.kwargs['review_pk']
         review = get_object_or_404(Review, id=review_id)
+        
+        content_type = ContentType.objects.get(id=review.id)
+        model_name = content_type.model_class().__name__
         serializer.save(sender=user, message_content_type=ContentType.objects.get_for_model(review),
-            object_id=review.id)
+            object_id=review.id, message_type=model_name)
+
 
 
 class CreateListView(generics.ListCreateAPIView):

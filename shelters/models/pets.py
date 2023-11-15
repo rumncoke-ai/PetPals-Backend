@@ -1,6 +1,6 @@
 from django.db import models
 from .shelter import PetShelter 
-from accounts.models import PetSeeker as Seeker 
+from accounts.models.seekers import PetSeeker as Seeker 
 
 class Pet(models.Model):
     shelter = models.ForeignKey(PetShelter, on_delete=models.CASCADE, related_name='pets')
@@ -18,7 +18,7 @@ class Pet(models.Model):
         ('Other', 'Other'),
     ]
     
-    pet_type = models.CharField(max_length=100, choices=PET_TYPE, blank=False, null=False) ### FRONTEND: SHOULD THIS BE A DROPDOWN
+    pet_type = models.CharField(max_length=100, choices=PET_TYPE,blank=False, null=False) ### FRONTEND: SHOULD THIS BE A DROPDOWN
     
     # MAYBE CHANGE TO NOT TYPE IN
     breed = models.CharField(max_length=100, blank=False, null=False)
