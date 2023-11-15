@@ -33,7 +33,7 @@ class CreateApplicationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Application
         fields = '__all__'
-        read_only_fields = ['pet', 'seeker', 'shelter', 'last_update_time', 'application_status', 'creation_time']
+        read_only_fields = ['pet', 'seeker', 'shelter', 'application_status']
     
 class ListApplicationSerializer(serializers.ModelSerializer):
     class Meta:
@@ -47,7 +47,7 @@ class ApplicationSerializer(serializers.ModelSerializer):
         read_only_fields = ('pet', 'seeker', 'shelter', 'name', 'phone_number', 'email', 'address1', 'address2', 'city', 'province', 'zip_code',
                             'num_adults', 'num_children', 'residence', 'ownership', 'pet_alone_time',
                             'current_pets', 'daily_routine', 'expenses', 'previous_pets', 'reason',
-                            'reference_name', 'reference_number', 'reference_email', 'additional_comments', 'last_update_time', 'creation_time')
+                            'reference_name', 'reference_number', 'reference_email', 'additional_comments')
 
     # def validate(self, data):
     #     # Ensure that the user can only update the application_status field

@@ -22,8 +22,8 @@ class Message(models.Model):
     sender = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True, blank=True)
 
 
-    def __str__(self):
-        return f"Message {self.id} - Sent by {self.sender.username}"
+    #def __str__(self):
+    #    return f"Message {self.id} - Sent by {self.sender.username}"
 
 # Example of usage:
 

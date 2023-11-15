@@ -54,7 +54,7 @@ class Application(models.Model):
     reference_name = models.CharField(max_length=50, blank=False, null=False)
     reference_number = models.CharField(validators=[phone_number_validator],max_length=15, blank=False, null=False)
     reference_email = models.EmailField(blank=False, null=False)
-    additional_comments = models.TextField(max_length=1000)
+    additional_comments = models.TextField(max_length=1000, blank=True, null=True)
 
 
     def __str__(self):
