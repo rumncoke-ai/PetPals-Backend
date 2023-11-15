@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from django.urls import reverse
 from rest_framework import serializers
 from django.shortcuts import render
 from rest_framework import status
@@ -9,16 +10,17 @@ from rest_framework import views
 from rest_framework import generics, permissions
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
+from notifications.views import CreateNotificationsView
 from shelters.models import PetShelter
 from ..models import Pet
 from ..models import Application
 from accounts.models import CustomUser, PetSeeker
-from .serializers import CreateApplicationSerializer, ApplicationSerializer, ListApplicationSerializer,ChatSerializer
+from ..serializers.application_serializers import CreateApplicationSerializer, ApplicationSerializer, ListApplicationSerializer,ChatSerializer
 from rest_framework.generics import RetrieveAPIView, CreateAPIView
 from django.shortcuts import get_object_or_404
 from chats.serializers.message_serializers import MessageSerializer
 from rest_framework.pagination import PageNumberPagination
-from .models.chat import Chat
+from ..models import Chat
 from django.contrib.contenttypes.models import ContentType
 from chats.models.messages import Message
 
@@ -40,7 +42,7 @@ class CreateApplicationView(CreateAPIView):
 
         pet = get_object_or_404(Pet, id=self.kwargs['pet_pk'])
         existing_application = Application.objects.filter(seeker=seeker, pet=pet)
-        if not existing_application:
+        if existing_application:
             return Response({"detail": "You have already created an application for this pet."},
                             status=status.HTTP_403_FORBIDDEN)
 
@@ -58,6 +60,11 @@ class CreateApplicationView(CreateAPIView):
                 'application_id': application.id,
                 'message': 'Application successfully created.',
             }
+                # Notification sent to Shelter 
+                url = reverse(f'pet:update', kwargs={'pet_pk': pet.id, 'application_pk': application.id})
+                notification_class = CreateNotificationsView()
+                notification_class.create_shelter_notification(seeker.user.id, pet.shelter.user.id, 'new_application', application.id, url)
+
                 return Response(response_data, status=status.HTTP_201_CREATED)
             response_data = {
                 'message': 'The Pet is not currently available.',
@@ -149,6 +156,11 @@ class ApplicationDetailView(RetrieveUpdateAPIView):
                         'application_id': application.id,
                         'message': 'Application status was successfully updated.',
                     }
+                    # Create Notification for seeker 
+                    url = reverse(f'pet:update', kwargs={'pet_pk': application.pet.id, 'application_pk': application.id})
+                    notification_class = CreateNotificationsView()
+                    notification_class.create_seeker_notification(shelter.user.id, application.seeker.user.id, 'application_status', application.id, url)
+
                     return Response(response_data, status=status.HTTP_200_OK)
                 else:
                     response_data = {
@@ -319,6 +331,15 @@ class CreateChatMessageView(generics.CreateAPIView):
                     'message': 'Successfully created.', 
                     'data': serializer.data
                 }
+                # Create Notification 
+                    # Seeker 
+                    # if isinstance(user, PetShelter):
+                    #     url = reverse(f'pet:update', kwargs={'application_pk': application.id})
+                    #     notification_class = CreateNotificationsView()
+                    #     notification_class.create_seeker_notification(
+                    #         chat.shelter.user, chat.seeker.user.id, 'new_message', chat_id, url)
+
+                    # Shelter 
                 return Response(response_data, status=status.HTTP_201_CREATED)
 
             else:
