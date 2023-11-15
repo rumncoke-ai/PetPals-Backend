@@ -18,7 +18,7 @@ from rest_framework.generics import RetrieveAPIView, CreateAPIView
 from django.shortcuts import get_object_or_404
 from chats.serializers.message_serializers import MessageSerializer
 from rest_framework.pagination import PageNumberPagination
-from ..models import Chat
+from ..models.chat import Chat
 from django.contrib.contenttypes.models import ContentType
 from chats.models.messages import Message
 

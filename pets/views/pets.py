@@ -4,7 +4,7 @@ from django.shortcuts import render
 from rest_framework import status
 from django.core.exceptions import PermissionDenied
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.generics import RetrieveUpdateDestroyAPIView, CreateAPIView
+from rest_framework.generics import RetrieveUpdateDestroyAPIView, CreateAPIView, ListCreateAPIView
 from rest_framework import views
 from rest_framework import generics, permissions
 from rest_framework.response import Response
@@ -39,7 +39,7 @@ class CustomPageNumberPagination(PageNumberPagination):
         })
 
 
-class PetListCreateView(CreateAPIView):
+class PetListCreateView(ListCreateAPIView):
     serializer_class = PetSerializer
     permission_classes = [permissions.AllowAny]
     pagination_class = CustomPageNumberPagination
@@ -151,7 +151,7 @@ class PetDetailView(RetrieveUpdateDestroyAPIView):
 
     def update(self, request, *args, **kwargs):
         pet = self.get_object()
-        serializer = self.get_serializer(instance=pet, data=request.data)
+        serializer = self.get_serializer(pet, data=request.data, partial=True)
         if self.request.user != pet.shelter.user:
             return Response({"detail": "Your shelter did not create this pet. You do not have permission to update it."},
                             status=status.HTTP_403_FORBIDDEN)
@@ -173,7 +173,6 @@ class PetDetailView(RetrieveUpdateDestroyAPIView):
                     image.delete()
             
             response_data = {
-                'pet_id': pet.id,
                 'message': 'Pet successfully updated.',
                 'data': serializer.data
             }

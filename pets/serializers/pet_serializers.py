@@ -25,7 +25,7 @@ class PetRetrieveSerializer(serializers.ModelSerializer):
     class Meta:
         model = Pet
         fields = '__all__'
-        read_only_fields = ('publication_date', 'shelter')
+        read_only_fields = ('publication_date', 'shelter', 'pet_images')
 
 class PetUpdateSerializer(serializers.ModelSerializer):
     shelter = PetShelterSerializer(required=False)
@@ -34,7 +34,7 @@ class PetUpdateSerializer(serializers.ModelSerializer):
     class Meta: 
         model = Pet
         fields = '__all__'
-        read_only_fields = ('publication_date', 'shelter')
+        read_only_fields = ('publication_date', 'shelter', 'pet_images')
 
 class PetSerializer(serializers.ModelSerializer):
     shelter = PetShelterSerializer(required=False)
