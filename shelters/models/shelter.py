@@ -17,7 +17,7 @@ class ShelterImage(models.Model):
     image_file = models.ImageField(upload_to='shelter_images/')
 
     def __str__(self):
-        return f"Image #{self.id} for {self.shelter.name}"
+        return f"Image #{self.id} for {self.shelter.shelter_name}"
 
 
 

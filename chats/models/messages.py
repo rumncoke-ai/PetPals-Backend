@@ -5,13 +5,6 @@ from accounts.models.seekers import PetSeeker as Seeker
 from shelters.models.shelter import PetShelter as Shelter
 from accounts.models.seekers import CustomUser
 
-class Chat(models.Model):
-    date_created = models.DateTimeField(auto_now_add=True)
-    seeker = models.ForeignKey(Seeker, on_delete=models.CASCADE, related_name='chats')  # Foreign Key to Seeker
-    shelter = models.ForeignKey(Shelter, on_delete=models.CASCADE, related_name='chats')  # Foreign Key to Shelter
-
-    def __str__(self):
-        return f"Chat {self.id} between {self.seeker.username} and {self.shelter.username}"
 
 
 class Message(models.Model):

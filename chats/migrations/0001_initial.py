@@ -18,24 +18,72 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='Message',
+            name="Message",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('object_id', models.PositiveIntegerField()),
-                ('message_type', models.CharField(blank=True, max_length=30, null=True)),
-                ('date_sent', models.DateTimeField(auto_now_add=True)),
-                ('content', models.TextField(max_length=500)),
-                ('message_content_type', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='messages', to='contenttypes.contenttype')),
-                ('sender', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("object_id", models.PositiveIntegerField()),
+                (
+                    "message_type",
+                    models.CharField(blank=True, max_length=30, null=True),
+                ),
+                ("date_sent", models.DateTimeField(auto_now_add=True)),
+                ("content", models.TextField(max_length=500)),
+                (
+                    "message_content_type",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="messages",
+                        to="contenttypes.contenttype",
+                    ),
+                ),
+                (
+                    "sender",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='Chat',
+            name="Chat",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('date_created', models.DateTimeField(auto_now_add=True)),
-                ('seeker', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='chats', to='accounts.petseeker')),
-                ('shelter', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='chats', to='shelters.petshelter')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("date_created", models.DateTimeField(auto_now_add=True)),
+                (
+                    "seeker",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="chats",
+                        to="accounts.petseeker",
+                    ),
+                ),
+                (
+                    "shelter",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="chats",
+                        to="shelters.petshelter",
+                    ),
+                ),
             ],
         ),
     ]

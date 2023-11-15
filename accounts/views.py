@@ -99,7 +99,7 @@ class SeekerRetrieveUpdateDestroyView(RetrieveUpdateDestroyAPIView):
                             status=status.HTTP_403_FORBIDDEN)
 
         
-        user_data = serializer.validated_data.pop('user', tuple())
+        user_data = serializer.validated_data.pop('user', {})
 
         user = CustomUser.objects.get(id=self.request.user.id)
         for key, value in user_data.items():

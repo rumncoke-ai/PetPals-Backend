@@ -85,12 +85,10 @@ Must send array of images want to keep
 """
 class PetShelterUpdateSerializer(serializers.ModelSerializer):
     user = CustomUserUpdateSerializer(required=False)
-    new_images = serializers.ListField(child=ShelterImageSerializer(), write_only=True, required=False)
-    old_images = serializers.ListField(child=serializers.IntegerField(), write_only=True, required=False)
     shelter_images = ShelterImageSerializer(many=True, read_only=True)
     class Meta: 
         model = PetShelter
-        fields = ['shelter_name', 'mission_statement', 'user', 'shelter_images','new_images', 'old_images']
+        fields = ['shelter_name', 'mission_statement', 'user', 'shelter_images']
 
     def update(self, instance, validated_data):
         user_data = validated_data.pop('user', None)

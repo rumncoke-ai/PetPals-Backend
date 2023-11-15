@@ -182,3 +182,49 @@ class PetListView(ListAPIView):
             queryset = queryset.order_by('weight')
 
         return queryset
+
+class PetImageCreateView(generics.CreateAPIView):
+    queryset = PetImage.objects.all()
+    serializer_class = PetImageSerializer
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        pet_pk = self.kwargs['pet_pk']
+        pet = get_object_or_404(Pet, id=pet_pk)
+        if self.request.user != pet.shelter.user:
+            return Response({"message": "You do not have permission to update this pet."},
+                            status=status.HTTP_403_FORBIDDEN)
+
+        if serializer.is_valid():
+            serializer.save(pet=pet)
+            data = {
+                'status': 'success',
+                'message': 'Successfully created.',
+                'data': serializer.data,  
+            }
+            return Response(data, status=status.HTTP_201_CREATED)
+
+        response_data = {
+                'message': 'Invalid Request.',
+                'errors': serializer.errors
+            }
+
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+class PetImageDeleteView(generics.DestroyAPIView):
+    queryset = PetImage.objects.all()
+    serializer_class = PetImageSerializer
+
+    def delete(self, request, *args, **kwargs):
+        pet_image = get_object_or_404(PetImage, id=self.kwargs['image_pk'])
+        
+        pet = get_object_or_404(Pet, id=self.kwargs['pet_pk'])
+
+        if self.request.user != pet.shelter.user:
+            return Response({"message": "You do not have permission to delete this shelter image."},
+                            status=status.HTTP_403_FORBIDDEN)
+
+        pet_image.delete()
+
+        return Response({"message": "Successfully deleted."},
+                        status=status.HTTP_204_NO_CONTENT)

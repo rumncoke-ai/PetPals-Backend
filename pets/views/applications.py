@@ -40,7 +40,7 @@ class CreateApplicationView(CreateAPIView):
 
         pet = get_object_or_404(Pet, id=self.kwargs['pet_pk'])
         existing_application = Application.objects.filter(seeker=seeker, pet=pet)
-        if not existing_application:
+        if existing_application:
             return Response({"detail": "You have already created an application for this pet."},
                             status=status.HTTP_403_FORBIDDEN)
 
