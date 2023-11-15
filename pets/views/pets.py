@@ -9,11 +9,10 @@ from rest_framework import views
 from rest_framework import generics, permissions
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
-from ..models.shelter import PetShelter, ShelterImage
-from ..models.reviews import Review
-from ..models.pets import Pet, PetImage
+from ..models import PetImage, Pet
+from shelters.models import PetShelter, Review
 from accounts.models import CustomUser, PetSeeker
-from ..serializers.shelter_serializers import PetShelterSerializer, PetShelterSignUpSerializer,PetShelterRetrieveSerializer,PetShelterUpdateSerializer
+from shelters.serializers.shelter_serializers import PetShelterSerializer, PetShelterSignUpSerializer,PetShelterRetrieveSerializer,PetShelterUpdateSerializer
 from rest_framework.generics import RetrieveAPIView, ListAPIView
 from django.shortcuts import get_object_or_404
 from ..serializers.pet_serializers import PetSerializer, PetImageSerializer, PetUpdateSerializer, PetRetrieveSerializer

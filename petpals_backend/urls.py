@@ -23,5 +23,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('seeker/', include('accounts.urls', namespace='seekers')),
     path('shelter/', include('shelters.urls', namespace='shelter')),
-    path('applications/', include('applications.urls', namespace='applications')),
+    path('pet/', include('pets.urls', namespace='pet')),
+
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

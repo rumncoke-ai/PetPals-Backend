@@ -1,8 +1,9 @@
 from rest_framework import serializers
 from accounts.models import PetSeeker
-from .models.applications import Application
-from .models.chat import Chat
-from shelters.models import PetShelter, Pet
+from ..models import Application
+from ..models import Chat
+from shelters.models import PetShelter
+from pets.models import Pet
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django.contrib.auth.password_validation import validate_password
 

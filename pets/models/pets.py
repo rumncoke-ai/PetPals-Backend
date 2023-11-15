@@ -1,5 +1,5 @@
 from django.db import models
-from .shelter import PetShelter 
+from shelters.models import PetShelter 
 from accounts.models.seekers import PetSeeker as Seeker 
 
 class Pet(models.Model):

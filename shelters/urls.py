@@ -2,10 +2,10 @@ from django.urls import path
 
 from rest_framework_simplejwt.views import TokenObtainPairView
 
-from .views.shelter import PetShelterSignUpView,ShelterRetrieveUpdateDestroyView
+from .views.shelter import PetShelterSignUpView, ShelterImageCreateView, ShelterImageDeleteView,ShelterRetrieveUpdateDestroyView
 
-from .views.shelter import PetShelterListView,ShelterImageCreateView,ShelterImageDeleteView
-from .views.pets import CreatePetView, PetDetailView,PetImageDeleteView,PetImageCreateView
+from .views.shelter import PetShelterListView
+from pets.views.pets import CreatePetView, PetDetailView
 from .views.reviews import CreateListView, CreateReviewMessageView, MessageListAPIView
 
 app_name = 'shelter'
