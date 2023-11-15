@@ -1,6 +1,6 @@
 from django.db import models
 from shelters.models.pets import Pet
-from accounts.models.seekers import PetSeeker as Seeker
+from accounts.models import PetSeeker as Seeker
 from shelters.models.shelter import PetShelter as Shelter
 
 
@@ -12,8 +12,10 @@ class Application(models.Model):
         ('Pending', 'Pending'),
         ('Approved', 'Approved'),
         ('Rejected', 'Rejected'),
+        ('Withdrawn', 'Withdrawn'),
     ]
     application_status = models.CharField(max_length=10, choices=APPLICATION_STATUS_CHOICES, blank=False, null=False)
+    creation_time = models.DateTimeField(auto_now_add=True)
     last_update_time = models.DateTimeField(auto_now=True)  # Automatically updated on each save
     name = models.CharField(max_length=200, blank=False, null=False)
     phone_number = models.CharField(max_length=15, blank=False, null=False)

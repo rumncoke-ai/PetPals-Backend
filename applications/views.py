@@ -1,3 +1,217 @@
 from django.shortcuts import render
+from rest_framework import serializers
+from django.shortcuts import render
+from rest_framework import status
+from django.core.exceptions import PermissionDenied
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.generics import ListAPIView, RetrieveUpdateDestroyAPIView,UpdateAPIView, RetrieveUpdateAPIView
+from rest_framework import views
+from rest_framework import generics, permissions
+from rest_framework.response import Response
+from rest_framework_simplejwt.tokens import RefreshToken
+from shelters.models import PetShelter, Pet
+from .models.applications import Application
+from accounts.models import CustomUser, PetSeeker
+from .serializers import CreateApplicationSerializer, ApplicationSerializer, ListApplicationSerializer
+from rest_framework.generics import RetrieveAPIView, CreateAPIView
+from django.shortcuts import get_object_or_404
 
-# Create your views here.
+class CreateApplicationView(CreateAPIView):
+    serializer_class = CreateApplicationSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+        # if self.request.user != review_serializer.instance.shelter.user:
+        #     return Response({"detail": "You do not have permission to create an application for this pet."},
+        #                 status=status.HTTP_403_FORBIDDEN)
+
+    def create(self, request, *args, **kwargs):
+        user = self.request.user
+        seeker = PetSeeker.objects.filter(user=user).first()
+        if not seeker:
+            return Response({"detail": "You do not have permission to create an application. Only Seekers can create applications."},
+                            status=status.HTTP_403_FORBIDDEN)
+        
+        pet = get_object_or_404(Pet, id=self.kwargs['pet_pk'])
+        app_serializer = self.get_serializer(data=request.data)
+
+        if app_serializer.is_valid():
+            if pet.status == 'Available':
+                app_serializer.validated_data['seeker'] = seeker
+                app_serializer.validated_data['pet'] = pet
+                app_serializer.validated_data['shelter'] = pet.shelter
+                app_serializer.validated_data['application_status'] = 'Pending'
+                application = app_serializer.save()
+                response_data = {
+                'application_id': application.id,
+                'message': 'Application successfully created.',
+            }
+                return Response(response_data, status=status.HTTP_201_CREATED)
+            response_data = {
+                'message': 'The Pet is not currently available.',
+            }
+            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            response_data = {
+                'errors': app_serializer.errors,
+                'message': 'Invalid Request.',
+            }
+            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ApplicationDetailView(RetrieveUpdateAPIView):
+    serializer_class = ApplicationSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        application_id = self.kwargs.get('application_pk')
+        pet = get_object_or_404(Pet, id=self.kwargs['pet_pk'])
+        app = get_object_or_404(Application, pet=pet, id=application_id)
+        return app
+    
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        user = self.request.user
+        shelter = PetShelter.objects.filter(user=user).first()
+        seeker = PetSeeker.objects.filter(user=user).first()
+        application_id = self.kwargs.get('application_pk')
+        serializer = self.get_serializer(instance)
+        response_data = serializer.data
+
+        if shelter:
+            pet = get_object_or_404(Pet, id=self.kwargs['pet_pk'])
+            # if the pet belongs to the current logged in shelter
+            if pet.shelter == shelter:
+                # app = get_object_or_404(Application, pet=pet, shelter=shelter, id=application_id)
+                return Response(response_data, status=status.HTTP_200_OK)
+            else:
+                # else cannot edit
+                return Response({"detail": "This Pet is not part of your shelter. You do not have permission to edit this application."},
+                                status=status.HTTP_403_FORBIDDEN)
+        elif seeker:
+            pet = get_object_or_404(Pet, id=self.kwargs['pet_pk'])
+            app = get_object_or_404(Application, pet=pet, id=application_id)
+            if app.seeker != seeker:
+                return Response({"detail": "You did not create this application. You do not have permission to edit it."},
+                                status=status.HTTP_403_FORBIDDEN)
+            else:
+                return Response(response_data, status=status.HTTP_200_OK)
+        else:
+            return Response({"detail": "You are not authenticated. You do not have permission to edit this application."},
+                                status=status.HTTP_403_FORBIDDEN)
+        # return app  
+
+        # instance = self.get_object()
+
+        # # Your custom logic goes here
+        # # For example, you can add additional data to the response
+        # # custom_data = {'additional_field': 'additional_value'}
+
+        # serializer = self.get_serializer(instance)
+        # response_data = serializer.data
+        # # response_data.update(custom_data)
+
+        # return Response(response_data, status=status.HTTP_200_OK)
+    
+
+
+
+
+
+
+    def update(self, request, *args, **kwargs):
+        application = self.get_object()
+        user = self.request.user
+        shelter = PetShelter.objects.filter(user=user).first()
+        seeker = PetSeeker.objects.filter(user=user).first()
+        app_serializer = self.get_serializer(instance=application, data=request.data)
+
+        if app_serializer.is_valid():
+            if shelter and application.application_status == 'Pending':
+                # Shelter can update the status from pending to accepted or denied
+                new_status = request.data.get('application_status')
+                if new_status in ['Approved', 'Rejected']:
+                    app_serializer.validated_data['application_status'] = new_status
+                    application = app_serializer.save()
+                    response_data = {
+                        'application_id': application.id,
+                        'message': 'Application status was successfully updated.',
+                    }
+                    return Response(response_data, status=status.HTTP_200_OK)
+                else:
+                    response_data = {
+                        'message': 'You can only change the application status to Accepted or Denied',
+                    }
+                    return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+            elif seeker and application.application_status in ['Pending', 'Approved']:
+                # Seeker can update the status from pending or accepted to withdrawn
+                new_status = request.data.get('application_status')
+                if new_status == 'Withdrawn':
+                    app_serializer.validated_data['application_status'] = new_status
+                    application = app_serializer.save()
+                    response_data = {
+                        'application_id': application.id,
+                        'message': 'Application status was successfully updated.',
+                    }
+                    return Response(response_data, status=status.HTTP_200_OK)
+                else:
+                    response_data = {
+                        'message': 'You can only change the application status to Withdrawn',
+                    }
+                    return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+            else:
+                return Response({"detail": "You do not have permission to edit the status of this application."},
+                                status=status.HTTP_403_FORBIDDEN)
+        else:
+            response_data = {
+                'errors': app_serializer.errors,
+                'message': 'Invalid Request.',
+            }
+            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ListApplicationView(ListAPIView):
+    serializer_class = ListApplicationSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        seeker = PetSeeker.objects.filter(user=user).first()
+        shelter = PetShelter.objects.filter(user=user).first()
+
+        if shelter:
+            # Shelter can only view their own applications
+            pet = get_object_or_404(Pet, id=self.kwargs['pet_pk'], shelter=shelter)
+            return Application.objects.filter(shelter=shelter, pet=pet)
+        elif seeker:
+            # Pet Seeker can only view their own applications
+            return Application.objects.filter(seeker=seeker)
+        else:
+            # For any other user type, return an empty queryset
+            return Application.objects.none()
+
+    def filter_queryset(self, queryset):
+    # Filter applications by status
+        application_status = self.request.query_params.get('application_status', None)
+        if application_status:
+            queryset = queryset.filter(application_status=application_status)
+
+    # Order by creation_time and last_update_time
+        order_by = self.request.query_params.get('order_by', None)
+
+        if order_by == "Creation":
+            queryset = queryset.order_by('creation_time')
+        elif order_by == "Update":
+            queryset = queryset.order_by('last_update_time')
+            # Default ordering if no specific order is requested
+            queryset = queryset.order_by('creation_time', 'last_update_time')
+
+        return queryset
+    
+            # Filter applications by status
+        # application_status = self.request.query_params.get('application_status', None)
+        # if application_status:
+        #     queryset = queryset.filter(application_status=application_status)
+
+        # return queryset

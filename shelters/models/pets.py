@@ -48,7 +48,7 @@ class Pet(models.Model):
 
     # BASED ON SHELTER INFO, NOT PROVIDED IN FORM 
     city = models.CharField(max_length=50, blank=False, null=False)
-    province = models.CharField(max_length=50, blank=False, null=False)
+    province = models.CharField(max_length=2, blank=False, null=False)
 
     # BASED ON DATE CREATED, NOT PROVIDED IN FORM
     publication_date = models.DateField(auto_now_add=True, blank=False, null=False)
