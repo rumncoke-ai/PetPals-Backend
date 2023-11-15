@@ -155,8 +155,8 @@ class CreateNotificationsView(CreateAPIView):
 class NotificationRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
     queryset = Notifications.objects.all()
     serializer_class = NotificationsSerializer
-    # permission_classes = [IsAuthenticated]
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [IsAuthenticated]
+    # permission_classes = [permissions.AllowAny]
 
     # def get_object(self):
     #     print("reached")
@@ -169,7 +169,7 @@ class NotificationRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
         if self.request.user != instance.receiver:
-            return Response({"message": "You do not have permission to delete this seeker."},
+            return Response({"message": "You do not have permission to delete this notification."},
                             status=status.HTTP_401_UNAUTHORIZED)
         instance.delete()
         return Response({'message': 'Successfully deleted.'}, status=status.HTTP_204_NO_CONTENT)
@@ -179,9 +179,10 @@ class NotificationRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
         return Response(serializer.data)
 
     def perform_retrieve(self, request):
-        print("reached")
         instance = self.get_object()
-        print(instance)
+        if self.request.user != instance.receiver:
+            return Response({"message": "You do not have permission to delete this notification."},
+                            status=status.HTTP_401_UNAUTHORIZED)
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
 
