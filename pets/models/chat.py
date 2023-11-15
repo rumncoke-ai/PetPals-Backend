@@ -6,6 +6,7 @@ from shelters.models.shelter import PetShelter as Shelter
 from accounts.models.seekers import CustomUser
 from .applications import Application
 from chats.models.messages import Message
+from django.contrib.contenttypes.fields import GenericRelation
 
 class Chat(models.Model):
     date_created = models.DateTimeField(auto_now_add=True)
