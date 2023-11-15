@@ -3,8 +3,13 @@ from shelters.models.pets import Pet
 from accounts.models import PetSeeker as Seeker
 from shelters.models.shelter import PetShelter as Shelter
 
+from django.core.validators import RegexValidator
 
 class Application(models.Model):
+    phone_number_validator = RegexValidator(
+        regex=r'^\d{10,15}$',
+        message="Phone number must be between 10 and 15 digits."
+    )
     pet = models.ForeignKey(Pet, on_delete=models.CASCADE, related_name='applications')
     seeker = models.ForeignKey(Seeker, on_delete=models.CASCADE, related_name='applications')
     shelter = models.ForeignKey(Shelter, on_delete=models.CASCADE, related_name='applications')  # This field is tentative, you can adjust it as needed
@@ -18,7 +23,7 @@ class Application(models.Model):
     creation_time = models.DateTimeField(auto_now_add=True)
     last_update_time = models.DateTimeField(auto_now=True)  # Automatically updated on each save
     name = models.CharField(max_length=200, blank=False, null=False)
-    phone_number = models.CharField(max_length=15, blank=False, null=False)
+    phone_number = models.CharField(validators=[phone_number_validator],max_length=15, blank=False, null=False)
     email = models.EmailField(max_length=200, blank=False, null=False)
     address1 = models.CharField(max_length=200, blank=False, null=False)
     address2 = models.CharField(max_length=200, blank=True, null=True)
@@ -47,7 +52,7 @@ class Application(models.Model):
     previous_pets = models.TextField(max_length=1000, blank=False, null=False)
     reason = models.TextField(max_length=1000, blank=False, null=False)
     reference_name = models.CharField(max_length=50, blank=False, null=False)
-    reference_number = models.CharField(max_length=15, blank=False, null=False)
+    reference_number = models.CharField(validators=[phone_number_validator],max_length=15, blank=False, null=False)
     reference_email = models.EmailField(blank=False, null=False)
     additional_comments = models.TextField(max_length=1000)
 

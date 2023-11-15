@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from accounts.models import PetSeeker
 from .models.applications import Application
+from .models.chat import Chat
 from shelters.models import PetShelter, Pet
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django.contrib.auth.password_validation import validate_password
@@ -52,3 +53,10 @@ class ApplicationSerializer(serializers.ModelSerializer):
     #     if 'application_status' not in data:
     #         raise serializers.ValidationError("You can only update the application_status field.")
     #     return data
+
+
+class ChatSerializer(serializers.ModelSerializer):
+    class Meta: 
+        model = Chat
+        fields = '__all__'
+        read_only_fields = ['date_created', 'shelter', 'seeker', 'application']
