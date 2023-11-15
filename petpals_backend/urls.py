@@ -24,5 +24,5 @@ urlpatterns = [
     path('seeker/', include('accounts.urls', namespace='seekers')),
     path('shelter/', include('shelters.urls', namespace='shelter')),
     path('pet/', include('pets.urls', namespace='pet')),
-
+    path('notifications/', include('notifications.urls', namespace='notifications'))
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

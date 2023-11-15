@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from django.urls import reverse
 from rest_framework import serializers
 from django.shortcuts import render
 from rest_framework import status
@@ -9,6 +10,7 @@ from rest_framework import views
 from rest_framework import generics, permissions
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
+from notifications.views import CreateNotificationsView
 from shelters.models import PetShelter
 from ..models import Pet
 from ..models import Application
@@ -60,6 +62,11 @@ class CreateApplicationView(CreateAPIView):
                 'application_id': application.id,
                 'message': 'Application successfully created.',
             }
+                # Notification sent to Shelter 
+                url = reverse(f'pet:update', kwargs={'pet_pk': pet.id, 'application_pk': application.id})
+                notification_class = CreateNotificationsView()
+                notification_class.create_shelter_notification(seeker.user.id, pet.shelter.user.id, 'new_application', application.id, url)
+
                 return Response(response_data, status=status.HTTP_201_CREATED)
             response_data = {
                 'message': 'The Pet is not currently available.',
@@ -151,6 +158,11 @@ class ApplicationDetailView(RetrieveUpdateAPIView):
                         'application_id': application.id,
                         'message': 'Application status was successfully updated.',
                     }
+                    # Create Notification for seeker 
+                    url = reverse(f'pet:update', kwargs={'pet_pk': application.pet.id, 'application_pk': application.id})
+                    notification_class = CreateNotificationsView()
+                    notification_class.create_seeker_notification(shelter.user.id, application.seeker.user.id, 'application_status', application.id, url)
+
                     return Response(response_data, status=status.HTTP_200_OK)
                 else:
                     response_data = {
@@ -325,6 +337,23 @@ class CreateChatMessageView(generics.CreateAPIView):
                     'message': 'Successfully created.', 
                     'data': serializer.data
                 }
+                # Create Notification 
+                # Seeker 
+                if user == chat.shelter.user:
+                    url = reverse(f'pet:list-message',
+                                  kwargs={'chat_pk': chat.id})
+                    notification_class = CreateNotificationsView()
+                    notification_class.create_seeker_notification(
+                        user.id, chat.seeker.user.id, 'new_message', chat_id, url)
+
+                # Shelter 
+                if user == chat.seeker.user:
+                    url = reverse(f'pet:list-message', kwargs={
+                                  'chat_pk': chat.id})
+                    notification_class = CreateNotificationsView()
+                    notification_class.create_shelter_notification(
+                        user.id, chat.shelter.user.id, 'new_message', chat_id, url)
+
                 return Response(response_data, status=status.HTTP_201_CREATED)
 
             else:

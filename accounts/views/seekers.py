@@ -65,29 +65,45 @@ class SeekerRetrieveUpdateDestroyView(RetrieveUpdateDestroyAPIView):
         
         # this is CustomUser object, NOT a PetSeeker object 
         user = self.request.user
-        seeker = get_object_or_404(PetSeeker, user=user)
+        # seeker = get_object_or_404(PetSeeker, user=user)
+        seeker = PetSeeker.objects.filter(user=user).first()
+        shelter = PetShelter.objects.filter(user=user).first()
 
         seeker_id = self.kwargs.get('seeker_pk') # pet seeker id from URL capture 
 
-        if seeker_id != seeker.id:
-            # checking if requesting user is a seeker -> shouldn't be allowe
-            # to get it
-            requesting_user = PetSeeker.objects.get(user=user)
-            if requesting_user is not None:
-                raise PermissionDenied(
-                    'You do not have permission to access this account.')
-            
-            shelter = get_object_or_404(PetShelter, user=user)
-            
-            # Check if the shelter has an active application with the pet seeker
-            if seeker.applications.filter(shelter=shelter, application_status__iexact='Pending').exists():
-                return seeker
+        if seeker:
+            if seeker_id != seeker.id:
+                raise PermissionDenied('You do not have permission to access this account.')
             else:
-                # TEST THIS CASE, see which HTTP code  
-                raise PermissionDenied(
-                    'This shelter does not have an active application with this pet seeker.')
+                return seeker
+        elif shelter:
+            url_seeker = PetSeeker.objects.filter(id=seeker_id).first()
+            if url_seeker:
+                if url_seeker.applications.filter(shelter=shelter, application_status__iexact='Pending').exists():
+                    return url_seeker
+                else:
+                    raise PermissionDenied('This shelter does not have an active application with this pet seeker.')
+            else:
+                raise PermissionDenied('This seeker does not exist.')
+        # if seeker_id != seeker.id:
+        #     # checking if requesting user is a seeker -> shouldn't be allowe
+        #     # to get it
+        #     requesting_user = PetSeeker.objects.get(user=user)
+        #     if requesting_user is not None:
+        #         raise PermissionDenied(
+        #             'You do not have permission to access this account.')
+            
+        #     shelter = get_object_or_404(PetShelter, user=user)
+            
+        #     # Check if the shelter has an active application with the pet seeker
+        #     if seeker.applications.filter(shelter=shelter, application_status__iexact='Pending').exists():
+        #         return seeker
+        #     else:
+        #         # TEST THIS CASE, see which HTTP code  
+        #         raise PermissionDenied(
+        #             'This shelter does not have an active application with this pet seeker.')
         
-        return seeker 
+        # return seeker 
         
         
 
