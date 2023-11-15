@@ -4,9 +4,8 @@ from django.contrib import admin
 # myapp/admin.py
 
 
-from .models import PetSeeker
-from .models import CustomUser
-
+from .models.seekers import PetSeeker
+from .models.seekers import CustomUser
 admin.site.register(PetSeeker)
 
 admin.site.register(CustomUser)
