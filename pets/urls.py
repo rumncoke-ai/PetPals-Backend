@@ -2,7 +2,7 @@ from django.urls import path
 
 from rest_framework_simplejwt.views import TokenObtainPairView
 
-from .views.pets import CreatePetView, PetDetailView, PetListView, PetImageCreateView, PetImageDeleteView
+from .views.pets import PetListCreateView, PetDetailView, PetImageCreateView, PetImageDeleteView
 from .views.applications import CreateApplicationView, ApplicationDetailView, ListAllApplicationView
 from .views.applications import CreateChatMessageView,MessageListAPIView,CreateChatListView
 

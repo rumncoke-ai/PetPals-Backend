@@ -1,2 +1,2 @@
-from .pets import CustomPageNumberPagination, CreatePetView, PetDetailView, PetListView, PetImageCreateView, PetImageDeleteView
+from .pets import CustomPageNumberPagination, PetDetailView, PetImageCreateView, PetImageDeleteView
 

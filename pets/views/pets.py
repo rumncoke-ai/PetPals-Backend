@@ -151,7 +151,7 @@ class PetDetailView(RetrieveUpdateDestroyAPIView):
 
     def update(self, request, *args, **kwargs):
         pet = self.get_object()
-        serializer = self.get_serializer(instance=pet, data=request.data)
+        serializer = self.get_serializer(pet, data=request.data, partial=True)
         if self.request.user != pet.shelter.user:
             return Response({"detail": "Your shelter did not create this pet. You do not have permission to update it."},
                             status=status.HTTP_403_FORBIDDEN)
