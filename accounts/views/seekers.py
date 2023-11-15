@@ -16,7 +16,7 @@ from django.core.exceptions import PermissionDenied
 from django.contrib import messages
 from django.contrib.auth.hashers import check_password
 from rest_framework import status
-
+from chats.models.messages import Message
 
 class PetSeekerSignUpView(generics.CreateAPIView):
 
@@ -156,6 +156,7 @@ class SeekerRetrieveUpdateDestroyView(RetrieveUpdateDestroyAPIView):
         if self.request.user != instance.user:
             return Response({"message": "You do not have permission to delete this seeker."},
                             status=status.HTTP_401_UNAUTHORIZED)
+
         user = CustomUser.objects.get(id=instance.user.id)
         user.delete()
         instance.delete()

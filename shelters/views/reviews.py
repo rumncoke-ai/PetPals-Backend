@@ -48,9 +48,9 @@ class CreateReviewMessageView(generics.CreateAPIView):
         review_id = self.kwargs['review_pk']
         review = get_object_or_404(Review, id=review_id)
         
-        content_type = ContentType.objects.get_for_model(review)
-        model_name = content_type.model_class().__name__
-        serializer.save(sender=user, message_content_type=content_type,
+        message_content_type = ContentType.objects.get_for_model(review)
+        model_name = message_content_type.model_class().__name__
+        serializer.save(sender=user, content_type=message_content_type,
             object_id=review.id, message_type=model_name)
   
         # Create Notification 
