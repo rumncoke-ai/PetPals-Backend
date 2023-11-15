@@ -4,7 +4,7 @@ from django.shortcuts import render
 from rest_framework import status
 from django.core.exceptions import PermissionDenied
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.generics import RetrieveUpdateDestroyAPIView, CreateAPIView
+from rest_framework.generics import RetrieveUpdateDestroyAPIView, CreateAPIView, ListCreateAPIView
 from rest_framework import views
 from rest_framework import generics, permissions
 from rest_framework.response import Response
@@ -39,7 +39,7 @@ class CustomPageNumberPagination(PageNumberPagination):
         })
 
 
-class PetListCreateView(CreateAPIView):
+class PetListCreateView(ListCreateAPIView):
     serializer_class = PetSerializer
     permission_classes = [permissions.AllowAny]
     pagination_class = CustomPageNumberPagination
