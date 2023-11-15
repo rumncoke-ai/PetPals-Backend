@@ -1,5 +1,5 @@
 from django.db import models
-from shelters.models.pets import Pet
+from pets.models.pets import Pet
 from accounts.models import PetSeeker as Seeker
 from shelters.models.shelter import PetShelter as Shelter
 
@@ -55,6 +55,7 @@ class Application(models.Model):
     reference_number = models.CharField(validators=[phone_number_validator],max_length=15, blank=False, null=False)
     reference_email = models.EmailField(blank=False, null=False)
     additional_comments = models.TextField(max_length=1000)
+
 
     def __str__(self):
         return f"Application #{self.id} for {self.pet.name}"

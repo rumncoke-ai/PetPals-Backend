@@ -5,7 +5,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 from .views.shelter import PetShelterSignUpView,ShelterRetrieveUpdateDestroyView
 
 from .views.shelter import PetShelterListView
-from .views.pets import CreatePetView, PetDetailView
+from pets.views.pets import CreatePetView, PetDetailView
 from .views.reviews import CreateListView, CreateReviewMessageView, MessageListAPIView
 
 app_name = 'shelter'
