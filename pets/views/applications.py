@@ -332,14 +332,22 @@ class CreateChatMessageView(generics.CreateAPIView):
                     'data': serializer.data
                 }
                 # Create Notification 
-                    # Seeker 
-                    # if isinstance(user, PetShelter):
-                    #     url = reverse(f'pet:update', kwargs={'application_pk': application.id})
-                    #     notification_class = CreateNotificationsView()
-                    #     notification_class.create_seeker_notification(
-                    #         chat.shelter.user, chat.seeker.user.id, 'new_message', chat_id, url)
+                # Seeker 
+                if user == chat.shelter.user:
+                    url = reverse(f'pet:list-message',
+                                  kwargs={'chat_pk': chat.id})
+                    notification_class = CreateNotificationsView()
+                    notification_class.create_seeker_notification(
+                        user.id, chat.seeker.user.id, 'new_message', chat_id, url)
 
-                    # Shelter 
+                # Shelter 
+                if user == chat.seeker.user:
+                    url = reverse(f'pet:list-message', kwargs={
+                                  'chat_pk': chat.id})
+                    notification_class = CreateNotificationsView()
+                    notification_class.create_shelter_notification(
+                        user.id, chat.shelter.user.id, 'new_message', chat_id, url)
+
                 return Response(response_data, status=status.HTTP_201_CREATED)
 
             else:

@@ -7,5 +7,5 @@ app_name = 'notifications'
 urlpatterns = [
     path('new/', CreateNotificationsView.as_view(), name='create'),
     path('', NotificationListView.as_view(), name='list'),
-    path('<int:notification_id>/',  NotificationRetrieveUpdateDestroyAPIView.as_view(), name='action'),
+    path('<int:pk>/',  NotificationRetrieveUpdateDestroyAPIView.as_view(), name='action'),
 ]

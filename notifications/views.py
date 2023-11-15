@@ -158,20 +158,33 @@ class NotificationRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
     # permission_classes = [IsAuthenticated]
     permission_classes = [permissions.AllowAny]
 
-    def get_object(self):
-        return get_object_or_404(Notifications, pk=self.kwargs['notification_id'])
+    # def get_object(self):
+    #     print("reached")
+    #     return get_object_or_404(Notifications, id=self.kwargs['notification_id'])
 
-    def perform_destroy(self, instance):  # Not working
-        self.instance.delete()
+    # def destroy(self, instance):  # Not working
+    #     instance.delete()
+    #     return Response(status=status.HTTP_204_NO_CONTENT)
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if self.request.user != instance.receiver:
+            return Response({"message": "You do not have permission to delete this seeker."},
+                            status=status.HTTP_401_UNAUTHORIZED)
+        instance.delete()
+        return Response({'message': 'Successfully deleted.'}, status=status.HTTP_204_NO_CONTENT)
+
 
     def perform_update(self, serializer):
         serializer.save(read=True)
         return Response(serializer.data)
 
     def perform_retrieve(self, request):
+        print("reached")
         instance = self.get_object()
+        print(instance)
         serializer = self.get_serializer(instance)
-        return Response(serializer.data.get('link', None))
+        return Response(serializer.data)
 
 
 class NotificationListView(ListAPIView):
