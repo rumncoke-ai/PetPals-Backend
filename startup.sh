@@ -35,6 +35,7 @@ pip install -r requirements.txt
 # Run migrations
 ./manage.py makemigrations
 ./manage.py migrate
+./manage.py loaddata mock_data.json
 
 # Deactivate virtual environment
 deactivate

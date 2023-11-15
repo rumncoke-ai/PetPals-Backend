@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'notifications',
     'rest_framework',
     'rest_framework_simplejwt',
+    'drf_spectacular'
 ]
 
 MIDDLEWARE = [
@@ -142,6 +143,16 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
 'rest_framework_simplejwt.authentication.JWTAuthentication',
 ],
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema'
+}
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Petpals API',
+    'DESCRIPTION': 'API documentation for our Petpals App',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+    'COMPONENT_SPLIT_REQUEST': True
+    # OTHER SETTINGS
 }
 
 
