@@ -12,12 +12,31 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from ..models import PetShelter, Review, PetImage, Pet, PetShelter
 from accounts.models import CustomUser, PetSeeker
 from ..serializers.shelter_serializers import PetShelterSerializer, PetShelterSignUpSerializer,PetShelterRetrieveSerializer,PetShelterUpdateSerializer
-from rest_framework.generics import RetrieveAPIView
+from rest_framework.generics import RetrieveAPIView, ListAPIView
 from django.shortcuts import get_object_or_404
 from ..serializers.pet_serializers import PetSerializer, PetImageSerializer, PetUpdateSerializer, PetRetrieveSerializer
 from rest_framework.pagination import PageNumberPagination
 from django.contrib.contenttypes.models import ContentType
 from chats.models.messages import Message
+
+
+class CustomPageNumberPagination(PageNumberPagination):
+    page_size = 10  # Set the default page size
+    page_size_query_param = 'page_size'
+    # Allow clients to override the page size via query parameter
+    max_page_size = 10  # Set the maximum allowed page size
+
+    def get_paginated_response(self, data):
+        return Response({
+            'pagination_details': {
+                'count': self.page.paginator.count,
+                'next': self.get_next_link(),
+                'previous': self.get_previous_link(),
+                'page_size': self.page_size,
+            },
+            'results': data,
+        })
+
 
 class CreatePetView(CreateAPIView):
     serializer_class = PetSerializer
@@ -116,3 +135,49 @@ class PetDetailView(RetrieveUpdateDestroyAPIView):
                 'message': 'Invalid Request.',
             }
             return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+
+class PetListView(ListAPIView):
+    serializer_class = PetSerializer
+    permission_classes = [permissions.AllowAny]
+    pagination_class = CustomPageNumberPagination
+
+    def get_queryset(self):
+        queryset = Pet.objects.all()
+
+        # # Filter by shelter and status
+        shelter = self.request.query_params.get('shelter')
+        status = self.request.query_params.get(
+            'status', 'available')  # Default status is 'available'
+        if shelter:
+            queryset = queryset.filter(shelter__shelter_name=shelter)
+        if status:
+            queryset = queryset.filter(status=status)
+
+        # # Additional filters
+        gender = self.request.query_params.get('gender')
+        color = self.request.query_params.get('colour')
+        size = self.request.query_params.get('size')
+        pet_type = self.request.query_params.get(
+            'type')  # Look into case sensitivity
+
+        if gender:
+            queryset = queryset.filter(gender=gender)
+        if color:
+            queryset = queryset.filter(color=color)
+        if size:
+            queryset = queryset.filter(weight__lte=size)
+        if pet_type:
+            queryset = queryset.filter(pet_type=pet_type)
+
+        # # Sorting options
+        order_by = self.request.query_params.get('order_by')
+        if order_by == 'name':
+            # THIS ISN'T WORKING FOR SOME REASON!!!
+            queryset = queryset.order_by('name')
+        if order_by == 'age':
+            queryset = queryset.order_by('date_of_birth')
+        if order_by == 'size':
+            queryset = queryset.order_by('weight')
+
+        return queryset
