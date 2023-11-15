@@ -48,9 +48,9 @@ class CreateReviewMessageView(generics.CreateAPIView):
         review_id = self.kwargs['review_pk']
         review = get_object_or_404(Review, id=review_id)
         
-        message_content_type = ContentType.objects.get_for_model(review)
-        model_name = message_content_type.model_class().__name__
-        serializer.save(sender=user, content_type=message_content_type,
+        content_type = ContentType.objects.get_for_model(review)
+        model_name = content_type.model_class().__name__
+        serializer.save(sender=user, content_type=content_type,
             object_id=review.id, message_type=model_name)
   
         # Create Notification 
@@ -98,6 +98,6 @@ class MessageListAPIView(ListAPIView):
     def get_queryset(self):
         review_id = self.kwargs.get('review_pk')
         return Message.objects.filter(
-            message_content_type=ContentType.objects.get_for_model(Review),
+            content_type=ContentType.objects.get_for_model(Review),
             object_id=review_id
         ).order_by('-date_sent')

@@ -327,9 +327,9 @@ class CreateChatMessageView(generics.CreateAPIView):
             serializer = self.get_serializer(data=request.data)
             if serializer.is_valid():
 
-                message_content_type = ContentType.objects.get_for_model(chat)
-                model_name = message_content_type.model_class().__name__
-                serializer.save(sender=user, content_type=message_content_type,
+                content_type = ContentType.objects.get_for_model(chat)
+                model_name = content_type.model_class().__name__
+                serializer.save(sender=user, content_type=content_type,
                         object_id=chat.id, message_type=model_name)
                 chat.application.last_update_time = timezone.now()
                 chat.application.save()
@@ -383,7 +383,7 @@ class MessageListAPIView(ListAPIView):
         if user == chat.seeker.user or user == chat.shelter.user:
             
             return Message.objects.filter(
-                message_content_type=ContentType.objects.get_for_model(Chat),
+                content_type=ContentType.objects.get_for_model(Chat),
                 object_id=chat_pk
             ).order_by('-date_sent')
         else:
