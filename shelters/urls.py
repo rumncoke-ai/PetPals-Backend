@@ -1,7 +1,9 @@
 from django.urls import path
 
 from rest_framework_simplejwt.views import TokenObtainPairView
+
 from .views.shelter import PetShelterSignUpView,ShelterRetrieveUpdateDestroyView
+
 from .views.shelter import PetShelterListView
 from .views.pets import CreatePetView, PetDetailView
 from .views.reviews import CreateListView, CreateReviewMessageView, MessageListAPIView
@@ -19,4 +21,3 @@ urlpatterns = [
     path('<int:shelter_pk>/pet/', CreatePetView.as_view(), name='create_pet'),
     path('<int:shelter_pk>/pet/<int:pet_pk>/', PetDetailView.as_view(), name='pet_detail'),
 ]
-
