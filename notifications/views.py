@@ -113,8 +113,6 @@ class CreateNotificationsView(CreateAPIView):
                 'link': link
             }
 
-            print(data)
-
             if listing is not None:
                 # Check the pet type and receiver preferences
                 if (
@@ -130,6 +128,8 @@ class CreateNotificationsView(CreateAPIView):
                         notification_object=item_pk,
                         link=link
                     )
+
+                    print(notification)
 
                     notification.save()
                     serialized_notification = NotificationsSerializer(
