@@ -1,5 +1,5 @@
 from django.shortcuts import render
-
+from django.urls import reverse
 from django.shortcuts import render
 from rest_framework import status
 from django.core.exceptions import PermissionDenied
@@ -19,7 +19,7 @@ from ..serializers.pet_serializers import PetSerializer, PetImageSerializer, Pet
 from rest_framework.pagination import PageNumberPagination
 from django.contrib.contenttypes.models import ContentType
 from chats.models.messages import Message
-
+from notifications.views import CreateNotificationsView
 
 class CustomPageNumberPagination(PageNumberPagination):
     page_size = 10  # Set the default page size
@@ -110,6 +110,16 @@ class PetListCreateView(ListCreateAPIView):
                 'pet_id': pet.id,
                 'message': 'Pet successfully created.',
             }
+
+            all_seekers =  PetSeeker.objects.all()
+
+            for seeker in all_seekers:
+                print(seeker)
+            # Create Notification for Seeker 
+                url = reverse(f'pet:pet_detail', kwargs={'pet_pk': pet.id})
+                notification_class = CreateNotificationsView()
+                notification_class.create_seeker_notification(
+                    shelter.user.id, seeker.user.id, 'new_pet', pet.id, url)
             return Response(response_data, status=status.HTTP_201_CREATED)
         else:
             response_data = {

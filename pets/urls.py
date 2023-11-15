@@ -14,10 +14,10 @@ urlpatterns = [
     path('<int:pet_pk>/applications/', CreateApplicationView.as_view(), name='create'),
     path('<int:pet_pk>/applications/<int:application_pk>/', ApplicationDetailView.as_view(), name='update'),
     path('applications/', ListAllApplicationView.as_view(), name='list-apps'),
-    path('applications/<int:application_pk>/chat/', CreateChatListView.as_view()),
-    path('applications/chat/<int:chat_pk>/message/', CreateChatMessageView.as_view()),
-    path('applications/chat/<int:chat_pk>/', MessageListAPIView.as_view()),
+    path('applications/<int:application_pk>/chat/', CreateChatListView.as_view(), name='list-chat'),
+    path('applications/chat/<int:chat_pk>/message/',
+         CreateChatMessageView.as_view(), name='create-message'),
+    path('applications/chat/<int:chat_pk>/', MessageListAPIView.as_view(), name='list-message'),
     path('<int:pet_pk>/image/', PetImageCreateView.as_view()),
-    path('<int:pet_pk>/image/<int:image_pk>/', PetImageDeleteView.as_view()),
-
+    path('<int:pet_pk>/image/<int:image_pk>/', PetImageDeleteView.as_view())
 ]

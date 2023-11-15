@@ -1,5 +1,5 @@
 from django.shortcuts import render
-
+from django.urls import reverse
 from django.shortcuts import render
 from rest_framework import status
 from django.core.exceptions import PermissionDenied
@@ -19,6 +19,7 @@ from chats.serializers.message_serializers import MessageSerializer
 from rest_framework.pagination import PageNumberPagination
 from django.contrib.contenttypes.models import ContentType
 from chats.models.messages import Message
+from notifications.views import CreateNotificationsView
 
 class CustomPageNumberPagination(PageNumberPagination):
     page_size = 5  # Set the default page size
@@ -37,7 +38,6 @@ class CustomPageNumberPagination(PageNumberPagination):
         })
 
 
-
 class CreateReviewMessageView(generics.CreateAPIView):
     serializer_class = MessageSerializer
 
@@ -52,6 +52,14 @@ class CreateReviewMessageView(generics.CreateAPIView):
         model_name = content_type.model_class().__name__
         serializer.save(sender=user, message_content_type=content_type,
             object_id=review.id, message_type=model_name)
+  
+        # Create Notification 
+        if hasattr(user, 'seeker'):
+            url = reverse(f'shelter:list_review', kwargs={
+                          'shelter_pk': review.shelter.id, 'review_pk': review.id})
+            notification_class = CreateNotificationsView()
+            notification_class.create_seeker_notification(
+                user.id, review.shelter.user.id, 'review', review.id, url)
 
 
 
@@ -71,6 +79,16 @@ class CreateListView(generics.ListCreateAPIView):
         shelter_id = self.kwargs['shelter_pk']
         shelter = get_object_or_404(PetShelter, id=shelter_id)
         serializer.save(user=user, shelter=shelter)
+
+        print("reached 1")
+        if hasattr(user, 'seeker'):
+            print("reached 2")
+            url = reverse(f'shelter:list-head-review', kwargs={
+                          'shelter_pk': shelter_id})
+            notification_class = CreateNotificationsView()
+            notification_class.create_seeker_notification(
+                user.id, shelter.user.id, 'review', serializer.data.get('id'), url)
+
 
 
 class MessageListAPIView(ListAPIView):
